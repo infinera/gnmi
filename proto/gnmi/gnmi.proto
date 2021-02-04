@@ -68,6 +68,34 @@ service gNMI {
   rpc Subscribe(stream SubscribeRequest) returns (stream SubscribeResponse);
 }
 
+// --------- gNMI Dial-out Related Services and Messages (BEGIN) ---------
+
+// A new set of reverse gNMI RPCs for use in dial-out mode of operation.
+// The RPC and message definitions are based on the document obtained from
+// Google called 'gNMI Dial-out Telemetry' (Dated: November 20, 2018).
+
+// RPC services
+service gNMI_reverse {
+    // Subscribe is similar to the well-known gNMI Subscribe RPC (https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md#35-subscribing-to-telemetry-updates)
+    // but is invoked in a dial-out scenario. In this case:
+    //   - The networking device that emits the telemetry updates, initiates the
+    //      gRPC HTTP/2 connection establishment to the telemetry receiver.
+    //   - The roles of the networking device (target) and the collector are 
+    //      reversed in contrast to the typical dial-in scenario; From an HTTP/2
+    //      connectivity establishment point of view, the target is the "client"
+    //      where as the collector is the "server"
+    rpc Subscribe(stream SubscribeResponseOrError) returns (stream SubscribeRequest);
+}
+
+// Messages
+message SubscribeResponseOrError {
+    string target_id = 1;
+    SubscribeResponse subscribe_response = 5;
+    string error = 20;
+}
+
+// --------- gNMI Dial-out Related Services and Messages (END) ---------
+
 // Notification is a re-usable message that is used to encode data from the
 // target to the client. A Notification carries two types of changes to the data
 // tree:

@@ -83,7 +83,7 @@ service gNMI_reverse {
     //   - The roles of the networking device (target) and the collector are 
     //      reversed in contrast to the typical dial-in scenario; From an HTTP/2
     //      connectivity establishment point of view, the target is the "client"
-    //      where as the collector is the "server"
+    //      where as the collector is the "server".
     rpc Subscribe(stream SubscribeResponseOrError) returns (stream SubscribeRequest);
 }
 

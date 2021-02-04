@@ -274,3 +274,132 @@ var _GNMI_serviceDesc = grpc.ServiceDesc{
 	},
 	Metadata: "proto/gnmi/gnmi.proto",
 }
+
+// GNMIReverseClient is the client API for GNMIReverse service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type GNMIReverseClient interface {
+	// Subscribe is similar to the well-known gNMI Subscribe RPC (https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md#35-subscribing-to-telemetry-updates)
+	// but is invoked in a dial-out scenario. In this case:
+	//   - The networking device that emits the telemetry updates, initiates the
+	//      gRPC HTTP/2 connection establishment to the telemetry receiver.
+	//   - The roles of the networking device (target) and the collector are
+	//      reversed in contrast to the typical dial-in scenario; From an HTTP/2
+	//      connectivity establishment point of view, the target is the "client"
+	//      where as the collector is the "server".
+	Subscribe(ctx context.Context, opts ...grpc.CallOption) (GNMIReverse_SubscribeClient, error)
+}
+
+type gNMIReverseClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewGNMIReverseClient(cc grpc.ClientConnInterface) GNMIReverseClient {
+	return &gNMIReverseClient{cc}
+}
+
+func (c *gNMIReverseClient) Subscribe(ctx context.Context, opts ...grpc.CallOption) (GNMIReverse_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_GNMIReverse_serviceDesc.Streams[0], "/gnmi.gNMI_reverse/Subscribe", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &gNMIReverseSubscribeClient{stream}
+	return x, nil
+}
+
+type GNMIReverse_SubscribeClient interface {
+	Send(*SubscribeResponseOrError) error
+	Recv() (*SubscribeRequest, error)
+	grpc.ClientStream
+}
+
+type gNMIReverseSubscribeClient struct {
+	grpc.ClientStream
+}
+
+func (x *gNMIReverseSubscribeClient) Send(m *SubscribeResponseOrError) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *gNMIReverseSubscribeClient) Recv() (*SubscribeRequest, error) {
+	m := new(SubscribeRequest)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// GNMIReverseServer is the server API for GNMIReverse service.
+// All implementations should embed UnimplementedGNMIReverseServer
+// for forward compatibility
+type GNMIReverseServer interface {
+	// Subscribe is similar to the well-known gNMI Subscribe RPC (https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md#35-subscribing-to-telemetry-updates)
+	// but is invoked in a dial-out scenario. In this case:
+	//   - The networking device that emits the telemetry updates, initiates the
+	//      gRPC HTTP/2 connection establishment to the telemetry receiver.
+	//   - The roles of the networking device (target) and the collector are
+	//      reversed in contrast to the typical dial-in scenario; From an HTTP/2
+	//      connectivity establishment point of view, the target is the "client"
+	//      where as the collector is the "server".
+	Subscribe(GNMIReverse_SubscribeServer) error
+}
+
+// UnimplementedGNMIReverseServer should be embedded to have forward compatible implementations.
+type UnimplementedGNMIReverseServer struct {
+}
+
+func (UnimplementedGNMIReverseServer) Subscribe(GNMIReverse_SubscribeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+
+// UnsafeGNMIReverseServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to GNMIReverseServer will
+// result in compilation errors.
+type UnsafeGNMIReverseServer interface {
+	mustEmbedUnimplementedGNMIReverseServer()
+}
+
+func RegisterGNMIReverseServer(s grpc.ServiceRegistrar, srv GNMIReverseServer) {
+	s.RegisterService(&_GNMIReverse_serviceDesc, srv)
+}
+
+func _GNMIReverse_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GNMIReverseServer).Subscribe(&gNMIReverseSubscribeServer{stream})
+}
+
+type GNMIReverse_SubscribeServer interface {
+	Send(*SubscribeRequest) error
+	Recv() (*SubscribeResponseOrError, error)
+	grpc.ServerStream
+}
+
+type gNMIReverseSubscribeServer struct {
+	grpc.ServerStream
+}
+
+func (x *gNMIReverseSubscribeServer) Send(m *SubscribeRequest) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *gNMIReverseSubscribeServer) Recv() (*SubscribeResponseOrError, error) {
+	m := new(SubscribeResponseOrError)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+var _GNMIReverse_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "gnmi.gNMI_reverse",
+	HandlerType: (*GNMIReverseServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Subscribe",
+			Handler:       _GNMIReverse_Subscribe_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "proto/gnmi/gnmi.proto",
+}
